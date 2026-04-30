@@ -362,25 +362,45 @@ export async function deleteTask(req, res, next) {
 export async function getTasksByBucket(req, res, next) {
 	try {
 		const { bucketName } = req.params;
+		let query = {};
 
-		validateTaskBucket(bucketName);
+		if (bucketName !== "All") {
+			validateTaskBucket(bucketName);
+			query.bucket = bucketName;
+		}
 
 		const statuses = ["Not Started", "In Progress", "Completed"];
 		const result = {};
 
 		for (const status of statuses) {
-			let query = { bucket: bucketName, status };
+			query.status = status;
 
 			// Members only see assigned tasks
 			if (!req.user.isAdmin()) {
-				query = {
-					$and: [
-						{ bucket: bucketName, status },
-						{
-							$or: [{ assignedTo: req.user._id }, { assignedToAll: true }],
-						},
-					],
-				};
+				query =
+					bucketName === "All"
+						? {
+								$and: [
+									{ status },
+									{
+										$or: [
+											{ assignedTo: req.user._id },
+											{ assignedToAll: true },
+										],
+									},
+								],
+							}
+						: {
+								$and: [
+									{ bucket: bucketName, status },
+									{
+										$or: [
+											{ assignedTo: req.user._id },
+											{ assignedToAll: true },
+										],
+									},
+								],
+							};
 			}
 
 			const tasks = await Task.find(query)
