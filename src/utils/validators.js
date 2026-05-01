@@ -37,6 +37,7 @@ export function validateTaskBucket(bucket) {
 		"Improvements / Enhancements",
 		"Technical Infrastructure",
 		"QA / Testing & Release",
+		"OneMAI Business",
 	];
 
 	if (!validBuckets.includes(bucket)) {

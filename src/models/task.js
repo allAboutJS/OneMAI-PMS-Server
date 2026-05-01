@@ -26,6 +26,7 @@ const taskSchema = new mongoose.Schema(
 				"Improvements / Enhancements",
 				"Technical Infrastructure",
 				"QA / Testing & Release",
+				"OneMAI Business",
 			],
 			required: [true, "Task must be assigned to a bucket"],
 			description: "Predefined category for organizing tasks",
