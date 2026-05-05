@@ -13,6 +13,7 @@ import {
 	validateTaskBucket,
 	validateTaskPriority,
 	validateTaskStatus,
+	validateUserIds,
 } from "../utils/validators.js";
 
 export async function createTask(req, res, next) {
@@ -183,7 +184,8 @@ export async function getTaskById(req, res, next) {
 export async function updateTask(req, res, next) {
 	try {
 		const { id } = req.params;
-		const { title, description, bucket, priority, dueDate, tags } = req.body;
+		const { title, description, bucket, priority, dueDate, tags, assignedTo } =
+			req.body;
 
 		const task = await Task.findById(id);
 
@@ -223,6 +225,11 @@ export async function updateTask(req, res, next) {
 			task.tags = tags
 				.filter((tag) => typeof tag === "string")
 				.map((tag) => tag.trim());
+		}
+
+		if (assignedTo?.length) {
+			validateUserIds(assignedTo);
+			task.assignedTo = assignedTo;
 		}
 
 		task.updatedBy = req.user._id;
