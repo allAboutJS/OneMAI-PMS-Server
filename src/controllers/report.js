@@ -199,6 +199,10 @@ export async function getTaskSummary(req, res, next) {
 			.sort({ dueDate: 1 })
 			.populate(["assignedTo", "createdBy"]);
 
+		const completed = await Task.find({ status: "Completed" })
+			.sort({ completedAt: 1 })
+			.populate(["assignedTo", "createdBy"]);
+
 		res.status(200).json({
 			success: true,
 			overdue: {
@@ -213,7 +217,12 @@ export async function getTaskSummary(req, res, next) {
 				count: future.length,
 				tasks: future,
 			},
-			total: overdue.length + dueToday.length + future.length,
+			completed: {
+				count: completed.length,
+				tasks: completed,
+			},
+			total:
+				overdue.length + dueToday.length + future.length + completed.length,
 		});
 	} catch (error) {
 		next(error);
