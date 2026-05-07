@@ -5,7 +5,6 @@ import {
 	BadRequestError,
 	ForbiddenError,
 	NotFoundError,
-	UnauthorizedError,
 } from "../utils/error-handler.js";
 import {
 	sanitizeInput,
