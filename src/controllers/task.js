@@ -5,6 +5,7 @@ import {
 	BadRequestError,
 	ForbiddenError,
 	NotFoundError,
+	UnauthorizedError,
 } from "../utils/error-handler.js";
 import {
 	sanitizeInput,
@@ -28,6 +29,14 @@ export async function createTask(req, res, next) {
 			assignedTo = [],
 			tags = [],
 		} = req.body;
+
+		if (
+			req.user.role !== "admin" &&
+			!assignedTo.length &&
+			!assignedTo.every((id) => id === req.user._id)
+		) {
+			throw BadRequestError("Only Admins can assign tasks to others");
+		}
 
 		validateRequiredFields(req.body, ["title", "bucket"]);
 		validateTaskBucket(bucket);
@@ -191,6 +200,15 @@ export async function updateTask(req, res, next) {
 
 		if (!task) {
 			throw new NotFoundError("Task");
+		}
+
+		if (
+			task.createdBy._id.toString() !== req.user._id.toString() &&
+			req.user.role !== "Admin"
+		) {
+			throw new BadRequestError(
+				"You can only update tasks created by yourself.",
+			);
 		}
 
 		// Update allowed fields

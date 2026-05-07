@@ -35,10 +35,10 @@ import {
 
 const router = express.Router();
 
-router.post("/", authenticate, requireAdmin, createTask);
+router.post("/", authenticate, requireMember, createTask);
 router.get("/", authenticate, requireMember, getTasks);
 router.get("/:id", authenticate, requireMember, getTaskById);
-router.patch("/:id", authenticate, requireAdmin, updateTask);
+router.patch("/:id", authenticate, requireMember, updateTask);
 router.delete("/:id", authenticate, requireAdmin, deleteTask);
 
 router.patch("/:id/status", authenticate, allowStatusUpdate, updateTaskStatus);
