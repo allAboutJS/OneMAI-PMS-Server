@@ -1,7 +1,17 @@
 import mongoose from "mongoose";
+import { Counter, getNextSequence } from "./counter.js";
 
 const taskSchema = new mongoose.Schema(
 	{
+		// Reference ID (e.g. TICKET-001)
+		ticketId: {
+			type: String,
+			unique: true,
+			sparse: true,
+			index: true,
+			description: "Human-readable sequential reference ID",
+		},
+
 		// Basic information
 		title: {
 			type: String,
@@ -153,7 +163,16 @@ taskSchema.index({ assignedTo: 1 });
 taskSchema.index({ dueDate: 1, status: 1 });
 taskSchema.index({ createdBy: 1 });
 
-taskSchema.pre("save", function (next) {
+taskSchema.pre("save", async function (next) {
+	if (this.isNew && !this.ticketId) {
+		try {
+			const seq = await getNextSequence("taskTicket");
+			this.ticketId = `TICKET-${String(seq).padStart(3, "0")}`;
+		} catch (error) {
+			return next(error);
+		}
+	}
+
 	if (this.isModified("status") && this.status === "Completed") {
 		this.completedAt = new Date();
 	}
@@ -252,3 +271,30 @@ taskSchema.statics.findAssignedToUser = function (userId) {
 };
 
 export const Task = mongoose.model("Task", taskSchema);
+
+export async function backfillTicketIds() {
+	try {
+		const tasksWithoutTicketId = await Task.find({
+			$or: [{ ticketId: null }, { ticketId: { $exists: false } }],
+		}).sort({ createdAt: 1 });
+
+		if (tasksWithoutTicketId.length === 0) {
+			return;
+		}
+
+		console.log(
+			`[Migration] Backfilling ticket IDs for ${tasksWithoutTicketId.length} existing tasks...`,
+		);
+
+		for (const task of tasksWithoutTicketId) {
+			const seq = await getNextSequence("taskTicket");
+			task.ticketId = `TICKET-${String(seq).padStart(3, "0")}`;
+			await task.save();
+		}
+
+		console.log("[Migration] ✓ Ticket ID backfill completed.");
+	} catch (error) {
+		console.error("[Migration] Error during ticket ID backfill:", error.message);
+	}
+}
+

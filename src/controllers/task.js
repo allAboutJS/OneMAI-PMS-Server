@@ -235,7 +235,10 @@ export async function getTaskById(req, res, next) {
 	try {
 		const { id } = req.params;
 
-		const task = await Task.findById(id).populate([
+		const isObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+		const query = isObjectId ? { _id: id } : { ticketId: id.toUpperCase() };
+
+		const task = await Task.findOne(query).populate([
 			"assignedTo",
 			"createdBy",
 			"updatedBy",

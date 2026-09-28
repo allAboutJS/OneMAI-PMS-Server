@@ -6,6 +6,7 @@ import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import authRoutes from "./routes/auth.js";
 import reportRoutes from "./routes/report.js";
 import taskRoutes from "./routes/task.js";
+import { backfillTicketIds } from "./models/task.js";
 
 const app = express();
 const port = config.port;
@@ -62,6 +63,7 @@ app.use(errorHandler);
 app.listen(port, async () => {
 	validateConfig();
 	await connectDB();
+	await backfillTicketIds();
 
 	console.log(`
   ╔════════════════════════════════════════════════════════╗
