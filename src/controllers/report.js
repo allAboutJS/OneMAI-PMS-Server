@@ -256,6 +256,11 @@ export async function getTasksByStatus(req, res, next) {
 			status: "In Progress",
 		}).populate(["assignedTo", "createdBy"]);
 
+		const inReview = await Task.find({
+			...baseQuery,
+			status: "In Review",
+		}).populate(["assignedTo", "createdBy"]);
+
 		const completed = await Task.find({
 			...baseQuery,
 			status: "Completed",
@@ -271,11 +276,19 @@ export async function getTasksByStatus(req, res, next) {
 				count: inProgress.length,
 				tasks: inProgress,
 			},
+			inReview: {
+				count: inReview.length,
+				tasks: inReview,
+			},
 			completed: {
 				count: completed.length,
 				tasks: completed,
 			},
-			total: notStarted.length + inProgress.length + completed.length,
+			total:
+				notStarted.length +
+				inProgress.length +
+				inReview.length +
+				completed.length,
 		});
 	} catch (error) {
 		next(error);

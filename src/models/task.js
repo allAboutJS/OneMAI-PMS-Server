@@ -35,7 +35,7 @@ const taskSchema = new mongoose.Schema(
 		// Status (workflow states)
 		status: {
 			type: String,
-			enum: ["Not Started", "In Progress", "Completed"],
+			enum: ["Not Started", "In Progress", "In Review", "Completed"],
 			default: "Not Started",
 			required: true,
 			description: "Current workflow state of the task",

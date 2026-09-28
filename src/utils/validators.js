@@ -22,7 +22,12 @@ export function validateRole(role) {
 }
 
 export function validateTaskStatus(status) {
-	const validStatuses = ["Not Started", "In Progress", "Completed"];
+	const validStatuses = [
+		"Not Started",
+		"In Progress",
+		"In Review",
+		"Completed",
+	];
 	if (!validStatuses.includes(status)) {
 		throw new BadRequestError(
 			`Status must be one of: ${validStatuses.join(", ")}`,

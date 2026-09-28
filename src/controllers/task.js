@@ -194,7 +194,11 @@ export async function getTasks(req, res, next) {
 			// By default: all pending tasks fully fetched, completed tasks limited by cutoff date
 			conditions.push({
 				$or: [
-					{ status: { $in: ["Not Started", "In Progress"] } },
+					{
+						status: {
+							$in: ["Not Started", "In Progress", "In Review"],
+						},
+					},
 					{
 						status: "Completed",
 						$or: [
@@ -463,7 +467,12 @@ export async function getTasksByBucket(req, res, next) {
 		}
 
 		const cutoffDate = getCompletedCutoffDate(completedTimeframe);
-		const statuses = ["Not Started", "In Progress", "Completed"];
+		const statuses = [
+			"Not Started",
+			"In Progress",
+			"In Review",
+			"Completed",
+		];
 		const result = {};
 
 		for (const status of statuses) {
