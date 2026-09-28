@@ -116,6 +116,31 @@ const taskSchema = new mongoose.Schema(
 			default: [],
 			description: "URLs or references to attached files (future enhancement)",
 		},
+
+		// Comments / Discussion thread
+		comments: [
+			{
+				author: {
+					type: mongoose.Schema.Types.ObjectId,
+					ref: "User",
+					required: [true, "Comment author is required"],
+				},
+				text: {
+					type: String,
+					trim: true,
+					maxlength: [2000, "Comment cannot exceed 2000 characters"],
+					default: "",
+				},
+				image: {
+					type: String,
+					default: null,
+				},
+				createdAt: {
+					type: Date,
+					default: Date.now,
+				},
+			},
+		],
 	},
 	{
 		timestamps: true, // Automatically add createdAt and updatedAt

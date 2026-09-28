@@ -9,6 +9,7 @@ import {
 } from "../utils/email-service.js";
 import {
 	ConflictError,
+	ForbiddenError,
 	NotFoundError,
 	UnauthorizedError,
 } from "../utils/error-handler.js";
@@ -138,7 +139,7 @@ export async function inviteUser(req, res, next) {
 		validateEmail(email);
 		validateRole(role);
 
-		connectDB();
+		await connectDB();
 		// Check if email already exists
 		const existingUser = await User.findOne({ email: email.toLowerCase() });
 
@@ -242,7 +243,7 @@ export async function updateUserProfile(req, res, next) {
 
 		// Check permission (admin or self)
 		if (req.user._id.toString() !== id && !req.user.isAdmin()) {
-			throw new Error("Unauthorized to update this profile");
+			throw new ForbiddenError("Unauthorized to update this profile");
 		}
 
 		const user = await User.findById(id);
@@ -290,7 +291,7 @@ export async function initiatePasswordRecovery(req, res, next) {
 		validateRequiredFields(req.body, ["email"]);
 		validateEmail(req.body.email);
 
-    await connectDB();
+		await connectDB();
 
 		const user = await User.findOne({ email: req.body.email });
 		if (!user) {
@@ -305,7 +306,7 @@ export async function initiatePasswordRecovery(req, res, next) {
 		user.passwordResetTokenExpires = expiresIn;
 
 		await user.save();
-		await sendPasswordResetEmail(email, user.firstName, 5);
+		await sendPasswordResetEmail(email, user.name, 5);
 
 		res.status(200).json({
 			success: true,

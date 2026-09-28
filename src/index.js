@@ -4,6 +4,7 @@ import { connectDB } from "./config/database.js";
 import { config, validateConfig } from "./config/environment.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 import authRoutes from "./routes/auth.js";
+import reportRoutes from "./routes/report.js";
 import taskRoutes from "./routes/task.js";
 
 const app = express();
@@ -18,8 +19,8 @@ app.use(
 	}),
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 if (process.env.NODE_ENV === "development") {
 	app.use((req, _, next) => {
@@ -38,7 +39,7 @@ app.get("/health", (_, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
-app.use("/api/reports", taskRoutes);
+app.use("/api/reports", reportRoutes);
 
 app.get("/api/docs", (_, res) => {
 	res.status(200).json({

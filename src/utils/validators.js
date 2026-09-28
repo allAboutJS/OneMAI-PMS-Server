@@ -105,3 +105,47 @@ export function sanitizeInput(text) {
 		.replace(/[<>]/g, "") // Remove angle brackets
 		.substring(0, 2000); // Limit length
 }
+
+export function validateComment(text, image) {
+	const sanitizedText = typeof text === "string" ? text.trim() : "";
+
+	if (!sanitizedText && !image) {
+		throw new BadRequestError("Comment must include text or an image");
+	}
+
+	if (sanitizedText.length > 2000) {
+		throw new BadRequestError("Comment text cannot exceed 2000 characters");
+	}
+
+	if (image) {
+		if (typeof image !== "string") {
+			throw new BadRequestError("Invalid image format");
+		}
+
+		// Strictly reject video uploads
+		if (
+			image.startsWith("data:video/") ||
+			/video\/(mp4|webm|ogg|quicktime|avi|mkv)/i.test(image)
+		) {
+			throw new BadRequestError(
+				"Videos are not accepted. Only image attachments (PNG, JPEG, WebP, GIF) are allowed.",
+			);
+		}
+
+		// Ensure it is a valid image data URI or base64 image
+		const isImageDataUri = /^data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,/i.test(image);
+		const isRawBase64 = /^[A-Za-z0-9+/=]+$/.test(image);
+
+		if (!isImageDataUri && !isRawBase64) {
+			throw new BadRequestError(
+				"Invalid image attachment format. Only image formats (PNG, JPEG, WebP, GIF) are allowed.",
+			);
+		}
+
+		// 5MB max base64 size check (~6.7MB string length)
+		if (image.length > 7 * 1024 * 1024) {
+			throw new BadRequestError("Image size exceeds the 5MB limit");
+		}
+	}
+}
+

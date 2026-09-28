@@ -16,7 +16,9 @@ import {
 	getTasksByStatus,
 } from "../controllers/report.js";
 import {
+	addComment,
 	createTask,
+	deleteComment,
 	deleteTask,
 	getTaskById,
 	getTasks,
@@ -35,46 +37,11 @@ import {
 
 const router = express.Router();
 
+// General task collection routes
 router.post("/", authenticate, requireMember, createTask);
 router.get("/", authenticate, requireMember, getTasks);
-router.get("/:id", authenticate, requireMember, getTaskById);
-router.patch("/:id", authenticate, requireMember, updateTask);
-router.delete("/:id", authenticate, requireAdmin, deleteTask);
 
-router.patch("/:id/status", authenticate, allowStatusUpdate, updateTaskStatus);
-router.patch("/:id/position", authenticate, requireMember, updateTaskPosition);
-router.post("/:id/assign", authenticate, requireTaskAssignment, assignTask);
-
-router.post(
-	"/:id/assign/add/:userId",
-	authenticate,
-	requireTaskAssignment,
-	addAssignee,
-);
-
-router.delete(
-	"/:id/assign/:userId",
-	authenticate,
-	requireTaskAssignment,
-	removeAssignee,
-);
-
-router.post(
-	"/:id/assign/bulk",
-	authenticate,
-	requireTaskAssignment,
-	bulkAssign,
-);
-
-router.delete(
-	"/:id/assign",
-	authenticate,
-	requireTaskAssignment,
-	clearAssignments,
-);
-
-router.get("/:id/assignees", authenticate, requireMember, getTaskAssignees);
-
+// Specific bucket and report routes (MUST be before /:id wildcard)
 router.get(
 	"/bucket/:bucketName",
 	authenticate,
@@ -88,5 +55,51 @@ router.get("/reports/future", authenticate, getFutureDatedTasks);
 router.get("/reports/summary", authenticate, getTaskSummary);
 router.get("/reports/by-status", authenticate, getTasksByStatus);
 router.get("/reports/my-tasks", authenticate, getMyTasks);
+
+// Comments routes
+router.post("/:id/comments", authenticate, requireMember, addComment);
+router.delete(
+	"/:id/comments/:commentId",
+	authenticate,
+	requireMember,
+	deleteComment,
+);
+
+// Task status & position updates
+router.patch("/:id/status", authenticate, allowStatusUpdate, updateTaskStatus);
+router.patch("/:id/position", authenticate, requireMember, updateTaskPosition);
+
+// Assignment routes
+router.post("/:id/assign", authenticate, requireTaskAssignment, assignTask);
+router.post(
+	"/:id/assign/add/:userId",
+	authenticate,
+	requireTaskAssignment,
+	addAssignee,
+);
+router.delete(
+	"/:id/assign/:userId",
+	authenticate,
+	requireTaskAssignment,
+	removeAssignee,
+);
+router.post(
+	"/:id/assign/bulk",
+	authenticate,
+	requireTaskAssignment,
+	bulkAssign,
+);
+router.delete(
+	"/:id/assign",
+	authenticate,
+	requireTaskAssignment,
+	clearAssignments,
+);
+router.get("/:id/assignees", authenticate, requireMember, getTaskAssignees);
+
+// Single task CRUD by ID (wildcard)
+router.get("/:id", authenticate, requireMember, getTaskById);
+router.patch("/:id", authenticate, requireMember, updateTask);
+router.delete("/:id", authenticate, requireAdmin, deleteTask);
 
 export default router;
